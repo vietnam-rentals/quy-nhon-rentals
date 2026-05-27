@@ -722,6 +722,30 @@ function showMsg(id, type, text) {
   el.textContent = text;
 }
 
+// Fetch IP on load
+let userIP = null;
+(async () => {
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    const data = await res.json();
+    userIP = data.ip;
+  } catch(e) { userIP = 'unknown'; }
+})();
+
+async function checkRecentIP(ip) {
+  if (!ip || ip === 'unknown') return false;
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const formula = `AND({IP Address} = '${ip}', IS_AFTER({Submitted At}, '${yesterday}'))`;
+  const params = new URLSearchParams({ filterByFormula: formula, pageSize: '1' });
+  params.append('fields[]', 'IP Address');
+  try {
+    const res = await fetch(`${API}?${params}`, { headers: { 'Authorization': `Bearer ${TOKEN}` } });
+    const data = await res.json();
+    return data.records && data.records.length > 0;
+  } catch(e) { return false; }
+}
+
+
 async function submitRental() {
   const building = document.getElementById('s-building').value;
   const unit = document.getElementById('s-unit').value;
@@ -743,6 +767,16 @@ async function submitRental() {
 
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Checking…';
+
+  const alreadySubmitted = await checkRecentIP(userIP);
+  if (alreadySubmitted) {
+    showMsg('submit-msg', 'error', 'A submission has already been made from this device in the last 24 hours.');
+    btn.disabled = false;
+    btn.textContent = 'Submit Rental Rate';
+    return;
+  }
+
   btn.innerHTML = '<span class="spinner"></span>Submitting…';
 
   const fields = {
@@ -754,7 +788,9 @@ async function submitRental() {
     'Lease duration': duration,
     'Period': period,
     'Flag count': 0,
-    'Flagged': false
+    'Flagged': false,
+    'IP Address': userIP || 'unknown',
+    'Submitted At': new Date().toISOString()
   };
 
   const buildingOther = document.getElementById('s-building-other').value.trim();
@@ -771,6 +807,8 @@ async function submitRental() {
 
   const inclusions = getInclusions();
   if (inclusions.length) fields['Inclusions'] = inclusions;
+
+  console.log('Submitting fields:', JSON.stringify(fields, null, 2));
 
   try {
     const res = await fetch(API, {
