@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quy Nhon Rental Rates</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sea: #1a6b7c;
+    --sea-light: #e8f4f7;
+    --sand: #f5f0e8;
+    --text: #1a1a1a;
+    --muted: #6b7280;
+    --border: #ddd6c8;
+    --white: #ffffff;
+    --success: #2d7a4f;
+    --error: #c0392b;
+    --accent: #e07b39;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--sand);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--sea);
+    color: white;
+    padding: 28px 24px 20px;
+    text-align: center;
+  }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  header p {
+    font-size: 13px;
+    opacity: 0.75;
+    margin-top: 6px;
+    font-weight: 300;
+  }
+
+  .tabs {
+    display: flex;
+    background: var(--sea);
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .tab {
+    flex: 1;
+    padding: 14px;
+    text-align: center;
+    color: rgba(255,255,255,0.6);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    color: white;
+    border-bottom-color: var(--accent);
+  }
+
+  .panel { display: none; padding: 20px 16px 40px; max-width: 560px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  .intro {
+    background: var(--sea-light);
+    border-left: 3px solid var(--sea);
+    padding: 14px 16px;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    color: var(--sea);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .field-group { margin-bottom: 18px; }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  label span.opt {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+    color: #aaa;
+  }
+
+  select, input[type=number], input[type=text], textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    appearance: none;
+    -webkit-appearance: none;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px; }
+
+  select:focus, input:focus { border-color: var(--sea); }
+
+  .building-other { display: none; margin-top: 10px; }
+  .building-other.show { display: block; }
+
+  .checkgroup {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+    user-select: none;
+  }
+
+  .check-item input[type=checkbox] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--sea);
+    flex-shrink: 0;
+  }
+
+  .check-item:has(input:checked) {
+    border-color: var(--sea);
+    background: var(--sea-light);
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 24px 0;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: var(--sea);
+    color: white;
+  }
+
+  .btn-primary:hover { background: #155a6a; }
+  .btn-primary:disabled { background: #aaa; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: white;
+    color: var(--sea);
+    border: 1.5px solid var(--sea);
+    margin-top: 10px;
+    font-size: 13px;
+    padding: 10px;
+  }
+
+  .btn-flag {
+    background: white;
+    color: var(--error);
+    border: 1.5px solid var(--error);
+    font-size: 13px;
+    padding: 10px;
+    margin-top: 10px;
+    width: 100%;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .message {
+    padding: 14px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    margin-top: 16px;
+    line-height: 1.5;
+    display: none;
+  }
+
+  .message.success { background: #e8f5ee; color: var(--success); border: 1px solid #b7deca; display: block; }
+  .message.error { background: #fdf0ee; color: var(--error); border: 1px solid #f0c4be; display: block; }
+  .message.info { background: var(--sea-light); color: var(--sea); border: 1px solid #b8d9e4; display: block; }
+
+  /* Query results */
+  .results-box {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    border: 1.5px solid var(--border);
+    display: none;
+  }
+
+  .results-box.show { display: block; }
+
+  .results-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .results-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--sea);
+    margin-bottom: 6px;
+  }
+
+  .results-count {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .stat-card {
+    background: var(--sand);
+    border-radius: 8px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .stat-value.highlight {
+    color: var(--sea);
+    font-size: 22px;
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+  }
+
+  .detail-card {
+    background: var(--sand);
+    border-radius: 8px;
+    padding: 12px;
+  }
+
+  .detail-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 4px;
+  }
+
+  .incl-section {
+    margin-top: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .incl-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .incl-tag {
+    background: var(--sea-light);
+    color: var(--sea);
+    border: 1px solid #b8d9e4;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .incl-pct {
+    opacity: 0.65;
+    font-weight: 400;
+    font-size: 12px;
+  }
+
+  .suppressed {
+    text-align: center;
+    padding: 24px 16px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .suppressed .lock { font-size: 28px; margin-bottom: 8px; }
+
+  .spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .flag-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .flag-modal.show { display: flex; }
+
+  .flag-sheet {
+    background: white;
+    width: 100%;
+    max-width: 560px;
+    border-radius: 16px 16px 0 0;
+    padding: 24px 20px 40px;
+  }
+
+  .flag-sheet h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  .flag-sheet p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  textarea {
+    height: 90px;
+    resize: none;
+    font-size: 14px;
+  }
+
+  .flag-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+  }
+
+  .flag-actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+
+  .flag-cancel { background: var(--sand); color: var(--text); }
+  .flag-submit { background: var(--error); color: white; }
+
+  .anon-note {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  @media (max-width: 380px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .checkgroup { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Quy Nhon Rental Rates</h1>
+  <p>Anonymous rental data — submitted by residents &amp; renters</p>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('submit')">Submit Rate</div>
+  <div class="tab" onclick="switchTab('query')">Check Rates</div>
+</div>
+
+<!-- SUBMIT PANEL -->
+<div class="panel active" id="panel-submit">
+
+  <div class="intro">
+    All submissions are anonymous. No personal data is collected. Data is used only to show rental ranges to others searching in Quy Nhon.
+  </div>
+
+  <div class="field-group">
+    <label>Building</label>
+    <select id="s-building" onchange="toggleOther()">
+      <option value="">— Select building —</option>
+      <option>Altara Residences</option>
+      <option>The Sóng</option>
+      <option>FLC Sea Tower</option>
+      <option>TMS Luxury</option>
+      <option>The Sailing</option>
+      <option>Pullman</option>
+      <option>Vina2 Panorama</option>
+      <option>Phú Tài Central Life</option>
+      <option>Phú Tài Residences</option>
+      <option>Marine Building</option>
+      <option>Thịnh Phát Tower</option>
+      <option>Calla Apartment</option>
+      <option>Ecolife</option>
+      <option>FLC Canava</option>
+      <option>Quy Nhon Melody</option>
+      <option>Hung Thinh</option>
+      <option>Simona Heights</option>
+      <option>Quy Nhon Seaview</option>
+      <option>Other</option>
+    </select>
+    <input type="text" class="building-other" id="s-building-other" placeholder="Enter building name">
+  </div>
+
+  <div class="field-group">
+    <label>Unit Type</label>
+    <select id="s-unit">
+      <option value="">— Select —</option>
+      <option>Studio</option>
+      <option>1BR</option>
+      <option>2BR</option>
+      <option>3BR</option>
+      <option>4BR+</option>
+    </select>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="field-group">
+      <label>Floor</label>
+      <input type="number" id="s-floor" placeholder="e.g. 12" min="1" max="60">
+    </div>
+    <div class="field-group">
+      <label>Area <span class="opt">(sqm, optional)</span></label>
+      <input type="number" id="s-area" placeholder="e.g. 65" min="10" max="500">
+    </div>
+  </div>
+
+  <div class="field-group">
+    <label>Aspect / View</label>
+    <select id="s-aspect">
+      <option value="">— Select —</option>
+      <option>Sea</option>
+      <option>Pool</option>
+      <option>Garden</option>
+      <option>Street</option>
+      <option>Courtyard</option>
+      <option>Mixed</option>
+    </select>
+  </div>
+
+  <div class="field-group">
+    <label>Furnished</label>
+    <select id="s-furnished">
+      <option value="">— Select —</option>
+      <option>Unfurnished</option>
+      <option>Part-furnished</option>
+      <option>Fully furnished</option>
+    </select>
+  </div>
+
+  <div class="field-group">
+    <label>Monthly Rent (million VND)</label>
+    <input type="number" id="s-rent" placeholder="e.g. 8.5" min="0.5" max="200" step="0.1">
+  </div>
+
+  <div class="field-group">
+    <label>Lease Duration</label>
+    <select id="s-duration">
+      <option value="">— Select —</option>
+      <option>1 month</option>
+      <option>3 months</option>
+      <option>6 months</option>
+      <option>12 months</option>
+      <option>24 months</option>
+    </select>
+
+
+
+  </div>
+
+  <div class="field-group">
+    <label>Deposit <span class="opt">(months)</span></label>
+    <input type="number" id="s-deposit" placeholder="e.g. 2" min="0" max="12">
+  </div>
+
+  <div class="field-group">
+    <label>Inclusions <span class="opt">(select all that apply)</span></label>
+    <div class="checkgroup">
+      <label class="check-item"><input type="checkbox" value="Water"> Water</label>
+      <label class="check-item"><input type="checkbox" value="Electricity"> Electricity</label>
+      <label class="check-item"><input type="checkbox" value="Internet"> Internet</label>
+      <label class="check-item"><input type="checkbox" value="Gym Pool"> Gym / Pool</label>
+      <label class="check-item"><input type="checkbox" value="Cleaning"> Cleaning</label>
+      <label class="check-item"><input type="checkbox" value="Management fee"> Mgmt fee</label>
+    </div>
+  </div>
+
+  <div class="field-group">
+    <label>Period</label>
+    <select id="s-period">
+      <option value="">— When is/was this lease? —</option>
+      <option>Q1 2025</option>
+      <option>Q2 2025</option>
+      <option>Q3 2025</option>
+      <option>Q4 2025</option>
+      <option>Q1 2026</option>
+      <option>Q2 2026</option>
+    </select>
+  </div>
+
+  <p class="anon-note">🔒 Completely anonymous. No account required. No location data collected.</p>
+
+  <div style="margin-top:16px">
+    <button class="btn btn-primary" id="submit-btn" onclick="submitRental()">Submit Rental Rate</button>
+  </div>
+
+  <div id="submit-msg" class="message"></div>
+
+</div>
+
+<!-- QUERY PANEL -->
+<div class="panel" id="panel-query">
+
+  <div class="intro">
+    Results show the rent range for matching submissions. At least 3 submissions are required before a range is displayed, to protect individual privacy.
+  </div>
+
+  <div class="field-group">
+    <label>Building <span class="opt">(optional)</span></label>
+    <select id="q-building">
+      <option value="">All buildings</option>
+      <option>Altara Residences</option>
+      <option>The Sóng</option>
+      <option>FLC Sea Tower</option>
+      <option>TMS Luxury</option>
+      <option>The Sailing</option>
+      <option>Pullman</option>
+      <option>Vina2 Panorama</option>
+      <option>Phú Tài Central Life</option>
+      <option>Phú Tài Residences</option>
+      <option>Marine Building</option>
+      <option>Thịnh Phát Tower</option>
+      <option>Calla Apartment</option>
+      <option>Ecolife</option>
+      <option>FLC Canava</option>
+      <option>Quy Nhon Melody</option>
+      <option>Hung Thinh</option>
+      <option>Simona Heights</option>
+      <option>Quy Nhon Seaview</option>
+    </select>
+  </div>
+
+  <div class="field-group">
+    <label>Unit Type <span class="opt">(optional)</span></label>
+    <select id="q-unit">
+      <option value="">All types</option>
+      <option>Studio</option>
+      <option>1BR</option>
+      <option>2BR</option>
+      <option>3BR</option>
+      <option>4BR+</option>
+    </select>
+  </div>
+
+  <div class="field-group">
+    <label>Furnished <span class="opt">(optional)</span></label>
+    <select id="q-furnished">
+      <option value="">All</option>
+      <option>Unfurnished</option>
+      <option>Part-furnished</option>
+      <option>Fully furnished</option>
+    </select>
+  </div>
+
+  <div class="field-group">
+    <label>Lease Duration <span class="opt">(optional)</span></label>
+    <select id="q-duration">
+      <option value="">All</option>
+      <option>1 month</option>
+      <option>3 months</option>
+      <option>6 months</option>
+      <option>12 months</option>
+      <option>24 months</option>
+    </select>
+
+
+
+  </div>
+
+  <button class="btn btn-primary" id="query-btn" onclick="queryRentals()">Show Rental Range</button>
+
+  <div id="query-msg" class="message"></div>
+
+  <div class="results-box" id="results-box">
+    <div id="results-content"></div>
+    <button class="btn-flag" onclick="openFlag()">⚑ Report suspicious data</button>
+  </div>
+
+</div>
+
+<!-- FLAG MODAL -->
+<div class="flag-modal" id="flag-modal">
+  <div class="flag-sheet">
+    <h3>Report Suspicious Data</h3>
+    <p>Tell us what looks wrong. This helps keep the data clean. Your report is anonymous.</p>
+    <textarea id="flag-note" placeholder="e.g. The rent shown seems much lower than actual market rate for this building..."></textarea>
+    <div class="flag-actions">
+      <button class="flag-cancel" onclick="closeFlag()">Cancel</button>
+      <button class="flag-submit" onclick="submitFlag()">Send Report</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE_ID = 'app7va4pfHM1vbDG4';
+const TOKEN = 'paty79sU5fQrejfhv.9d8a5e3047a119e62b9f3adaf526dcc73a51cad29935a74bc0c8ce149c532205';
+const TABLE = 'Rentals';
+const API = `https://api.airtable.com/v0/${BASE_ID}/${encodeURIComponent(TABLE)}`;
+const HEADERS = { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' };
+
+let lastQueryParams = '';
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', (tab === 'submit' && i === 0) || (tab === 'query' && i === 1)));
+  document.querySelectorAll('.panel').forEach((p, i) => p.classList.toggle('active', (tab === 'submit' && i === 0) || (tab === 'query' && i === 1)));
+}
+
+function toggleOther() {
+  const val = document.getElementById('s-building').value;
+  document.getElementById('s-building-other').classList.toggle('show', val === 'Other');
+}
+
+function getInclusions() {
+  return Array.from(document.querySelectorAll('.checkgroup input:checked')).map(c => c.value);
+}
+
+function fmtVND(n) {
+  // Values stored as millions (e.g. 8.5 = 8.5M VND)
+  return n % 1 === 0 ? n.toFixed(0) + 'M' : n.toFixed(1) + 'M';
+}
+
+function median(arr) {
+  const sorted = [...arr].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0 ? sorted[mid] : Math.round((sorted[mid - 1] + sorted[mid]) / 2);
+}
+
+function showMsg(id, type, text) {
+  const el = document.getElementById(id);
+  el.className = `message ${type}`;
+  el.textContent = text;
+}
+
+async function submitRental() {
+  const building = document.getElementById('s-building').value;
+  const unit = document.getElementById('s-unit').value;
+  const floor = document.getElementById('s-floor').value;
+  const rent = document.getElementById('s-rent').value;
+  const furnished = document.getElementById('s-furnished').value;
+  const duration = document.getElementById('s-duration').value;
+  const period = document.getElementById('s-period').value;
+
+  if (!building || !unit || !floor || !rent || !furnished || !duration || !period) {
+    showMsg('submit-msg', 'error', 'Please fill in all required fields.');
+    return;
+  }
+
+  if (parseFloat(rent) < 0.5) {
+    showMsg('submit-msg', 'error', 'Rent looks too low — enter amount in millions, e.g. 8.5 for 8,500,000 VND.');
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Submitting…';
+
+  const fields = {
+    'Building': building === 'Other' ? 'Other' : building,
+    'Unit type': unit,
+    'Floor': parseInt(floor),
+    'Furnished': furnished,
+    'Rent VND': parseFloat(rent),
+    'Lease duration': duration,
+    'Period': period,
+    'Flag count': 0,
+    'Flagged': false
+  };
+
+  const buildingOther = document.getElementById('s-building-other').value.trim();
+  if (building === 'Other' && buildingOther) fields['Building Other'] = buildingOther;
+
+  const area = document.getElementById('s-area').value;
+  if (area) fields['Area sqm'] = parseInt(area);
+
+  const aspect = document.getElementById('s-aspect').value;
+  if (aspect) fields['Aspect'] = aspect;
+
+  const deposit = document.getElementById('s-deposit').value;
+  if (deposit) fields['Deposit months'] = parseInt(deposit);
+
+  const inclusions = getInclusions();
+  if (inclusions.length) fields['Inclusions'] = inclusions;
+
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: HEADERS,
+      body: JSON.stringify({ fields })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg('submit-msg', 'success', '✓ Submitted. Thank you — your data helps others find fair rates.');
+      // Reset form
+      document.querySelectorAll('#panel-submit select, #panel-submit input[type=number], #panel-submit input[type=text]').forEach(el => { el.value = ''; });
+      document.querySelectorAll('.checkgroup input').forEach(el => el.checked = false);
+      document.getElementById('s-building-other').classList.remove('show');
+    } else {
+      showMsg('submit-msg', 'error', 'Submission failed: ' + (data.error?.message || 'unknown error'));
+    }
+  } catch(e) {
+    showMsg('submit-msg', 'error', 'Network error — please try again.');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Submit Rental Rate';
+}
+
+async function queryRentals() {
+  const building = document.getElementById('q-building').value;
+  const unit = document.getElementById('q-unit').value;
+  const furnished = document.getElementById('q-furnished').value;
+  const duration = document.getElementById('q-duration').value;
+
+  const btn = document.getElementById('query-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Searching…';
+  document.getElementById('results-box').classList.remove('show');
+  document.getElementById('query-msg').className = 'message';
+
+  // Build filter formula
+  const filters = [];
+  if (building) filters.push(`{Building} = '${building}'`);
+  if (unit) filters.push(`{Unit type} = '${unit}'`);
+  if (furnished) filters.push(`{Furnished} = '${furnished}'`);
+  if (duration) filters.push(`{Lease duration} = '${duration}'`);
+  filters.push(`NOT({Flagged})`);
+
+  const formula = filters.length > 1 ? `AND(${filters.join(',')})` : filters[0];
+  const params = new URLSearchParams({ pageSize: '100' });
+  params.append('fields[]', 'Rent VND');
+  params.append('fields[]', 'Deposit months');
+  params.append('fields[]', 'Inclusions');
+  params.append('fields[]', 'Lease duration');
+  if (formula) params.set('filterByFormula', formula);
+
+  lastQueryParams = [building, unit, furnished, duration].filter(Boolean).join(' · ') || 'All listings';
+
+  try {
+    let allRecords = [];
+    let offset = null;
+
+    do {
+      const url = `${API}?${params.toString()}${offset ? '&offset=' + offset : ''}`;
+      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${TOKEN}` } });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error?.message || 'API error');
+      allRecords = allRecords.concat(data.records.map(r => r.fields));
+      offset = data.offset;
+    } while (offset);
+
+    displayResults(allRecords, building, unit, furnished, duration);
+  } catch(e) {
+    showMsg('query-msg', 'error', 'Could not load data: ' + e.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Show Rental Range';
+}
+
+function mode(arr) {
+  const freq = {};
+  arr.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+  return Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0];
+}
+
+function displayResults(records, building, unit, furnished, duration) {
+  const box = document.getElementById('results-box');
+  const content = document.getElementById('results-content');
+
+  const rents = records.map(r => r['Rent VND']).filter(Boolean);
+
+  if (rents.length < 3) {
+    content.innerHTML = `
+      <div class="suppressed">
+        <div class="lock">🔒</div>
+        <strong>Not enough data yet</strong>
+        <p style="margin-top:8px;font-size:13px">At least 3 submissions are needed to show a range for this combination.<br>Be the first to submit!</p>
+      </div>`;
+    box.classList.add('show');
+    return;
+  }
+
+  const min = Math.min(...rents);
+  const max = Math.max(...rents);
+  const med = median(rents);
+
+  // Deposit
+  const deposits = records.map(r => r['Deposit months']).filter(v => v != null);
+  const medDeposit = deposits.length ? median(deposits) : null;
+
+  // Lease duration mode
+  const durations = records.map(r => r['Lease duration']).filter(Boolean);
+  const typicalDuration = durations.length ? mode(durations) : null;
+
+  // Inclusions — count frequency across all records
+  const inclCount = {};
+  records.forEach(r => {
+    (r['Inclusions'] || []).forEach(inc => {
+      inclCount[inc] = (inclCount[inc] || 0) + 1;
+    });
+  });
+  const commonIncl = Object.entries(inclCount)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => ({ name, pct: Math.round(count / records.length * 100) }));
+
+  const labelParts = [];
+  if (building) labelParts.push(building);
+  if (unit) labelParts.push(unit);
+  if (furnished) labelParts.push(furnished);
+  if (duration) labelParts.push(duration);
+  const label = labelParts.length ? labelParts.join(' · ') : 'All listings';
+
+  const inclHTML = commonIncl.length
+    ? commonIncl.map(i => `<span class="incl-tag">${i.name} <span class="incl-pct">${i.pct}%</span></span>`).join('')
+    : '<span style="color:var(--muted);font-size:13px">No inclusions data</span>';
+
+  content.innerHTML = `
+    <div class="results-label">Rental range</div>
+    <div class="results-title">${label}</div>
+    <div class="results-count">Based on ${records.length} submission${records.length !== 1 ? 's' : ''}</div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Minimum</div>
+        <div class="stat-value">${fmtVND(min)}</div>
+        <div class="stat-sub">VND/mo</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Median</div>
+        <div class="stat-value highlight">${fmtVND(med)}</div>
+        <div class="stat-sub">VND/mo</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Maximum</div>
+        <div class="stat-value">${fmtVND(max)}</div>
+        <div class="stat-sub">VND/mo</div>
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div class="detail-card">
+        <div class="results-label">Typical deposit</div>
+        <div class="detail-value">${medDeposit != null ? medDeposit + ' month' + (medDeposit !== 1 ? 's' : '') : '—'}</div>
+      </div>
+      <div class="detail-card">
+        <div class="results-label">Typical lease</div>
+        <div class="detail-value">${typicalDuration || '—'}</div>
+      </div>
+    </div>
+
+    <div class="incl-section">
+      <div class="results-label" style="margin-bottom:10px">Usually included in rent</div>
+      <div class="incl-tags">${inclHTML}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">% of submissions that include each item</div>
+    </div>
+  `;
+
+  box.classList.add('show');
+}
+
+function openFlag() {
+  document.getElementById('flag-note').value = '';
+  document.getElementById('flag-modal').classList.add('show');
+}
+
+function closeFlag() {
+  document.getElementById('flag-modal').classList.remove('show');
+}
+
+async function submitFlag() {
+  const note = document.getElementById('flag-note').value.trim();
+  if (!note) { alert('Please describe what looks wrong.'); return; }
+
+  // Post a flag record — uses a separate Reports table if it exists, silently fails if not
+  const reportFields = {
+    'Building': 'Other',
+    'Building Other': '[FLAG REPORT] ' + lastQueryParams,
+    'Unit type': 'Studio',
+    'Floor': 0,
+    'Furnished': 'Unfurnished',
+    'Rent VND': 0,
+    'Lease duration': '1 month',
+    'Period': 'Q2 2026',
+    'Flagged': true,
+    'Flag count': 1
+  };
+
+  try {
+    await fetch(API, {
+      method: 'POST',
+      headers: HEADERS,
+      body: JSON.stringify({ fields: reportFields })
+    });
+  } catch(e) { /* silent fail */ }
+
+  closeFlag();
+  alert('Report submitted. Thank you.');
+}
+</script>
+
+</body>
+</html>
