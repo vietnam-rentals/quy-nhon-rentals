@@ -735,7 +735,7 @@ let userIP = null;
 async function checkRecentIP(ip) {
   if (!ip || ip === 'unknown') return false;
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const formula = `AND({IP Address} = '${ip}', IS_AFTER({Submitted At}, '${yesterday}'))`;
+  const formula = `AND({IP Address} = '${ip}', IS_AFTER({Date submitted}, '${yesterday}'))`;
   const params = new URLSearchParams({ filterByFormula: formula, pageSize: '1' });
   params.append('fields[]', 'IP Address');
   try {
@@ -790,7 +790,7 @@ async function submitRental() {
     'Flag count': 0,
     'Flagged': false,
     'IP Address': userIP || 'unknown',
-    'Submitted At': new Date().toISOString()
+    'Date submitted': new Date().toISOString()
   };
 
   const buildingOther = document.getElementById('s-building-other').value.trim();
